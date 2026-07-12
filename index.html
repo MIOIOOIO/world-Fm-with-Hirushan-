@@ -90,16 +90,20 @@
     background: radial-gradient(circle at 30% 30%, rgba(17,17,17,0.22), rgba(17,17,17,0.04) 70%);
     border: 1px solid rgba(17,17,17,0.12);
     animation-name: bubbleRise;
-    animation-timing-function: ease-in;
+    animation-timing-function: ease-out;
     animation-fill-mode: forwards;
+    will-change: transform, opacity;
   }
   @keyframes bubbleRise {
     0% {
       transform: translateY(0) translateX(0) scale(0.6);
       opacity: 0;
     }
-    12% {
-      opacity: 0.9;
+    10% {
+      opacity: 0.85;
+    }
+    85% {
+      opacity: 0.5;
     }
     100% {
       transform: translateY(-110vh) translateX(var(--drift, 20px)) scale(1);
@@ -131,6 +135,7 @@
       "art scrub"
       "art transport"
       "art volume"
+      "art eq"
       "art status"
       "art views"
       "comments yt";
@@ -141,6 +146,8 @@
   body.desktop-view .scrub { grid-area: scrub; margin-bottom: 4px; }
   body.desktop-view .transport { grid-area: transport; justify-content: flex-start; gap: 32px; margin-bottom: 12px; }
   body.desktop-view .volume-row { grid-area: volume; margin-bottom: 4px; }
+  body.desktop-view .eq-section { grid-area: eq; margin-top: 4px; padding-top: 12px; }
+  body.desktop-view .eq-knobs { justify-content: flex-start; }
   body.desktop-view .status-pill { grid-area: status; text-align: left; margin-top: 0; }
   body.desktop-view .streams-count { grid-area: views; justify-content: flex-start; margin-top: 0; }
   body.desktop-view .yt-section { grid-area: yt; }
@@ -355,6 +362,78 @@
   }
   .volume-row svg { width: 18px; height: 18px; color: var(--sub); flex-shrink: 0; }
   .volume-row svg.big { width: 22px; height: 22px; }
+
+  .eq-section {
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid rgba(0,0,0,0.08);
+  }
+  .eq-heading {
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    color: var(--sub);
+    margin-bottom: 14px;
+    text-align: center;
+  }
+  .eq-knobs {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+  }
+  .eq-knob-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .eq-knob {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: radial-gradient(circle at 35% 30%, rgba(0,0,0,0.06), rgba(0,0,0,0.02));
+    border: 1px solid rgba(0,0,0,0.15);
+    position: relative;
+    cursor: grab;
+    touch-action: none;
+    user-select: none;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+  }
+  .eq-knob:active { cursor: grabbing; }
+  .eq-knob-indicator {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 3px;
+    height: 20px;
+    background: var(--accent);
+    border-radius: 2px;
+    transform-origin: 50% 0%;
+    transform: translate(-50%, 0) rotate(0deg);
+  }
+  .eq-knob-dot {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    transform: translate(-50%, -50%);
+  }
+  .eq-knob-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .eq-knob-value {
+    font-size: 0.65rem;
+    color: var(--sub);
+    font-variant-numeric: tabular-nums;
+    min-width: 32px;
+    text-align: center;
+  }
 
   input[type="range"] {
     -webkit-appearance: none;
@@ -673,6 +752,36 @@
       <svg class="big" viewBox="0 0 24 24" fill="currentColor"><path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2c0-1.77-1-3.29-2.5-4.03v8.05c1.5-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
     </div>
 
+    <div class="eq-section">
+      <div class="eq-heading">Equalizer</div>
+      <div class="eq-knobs">
+        <div class="eq-knob-wrap">
+          <div class="eq-knob" id="eqKnobBass" data-band="bass">
+            <div class="eq-knob-indicator"></div>
+            <div class="eq-knob-dot"></div>
+          </div>
+          <div class="eq-knob-label">Bass</div>
+          <div class="eq-knob-value" id="eqValBass">0dB</div>
+        </div>
+        <div class="eq-knob-wrap">
+          <div class="eq-knob" id="eqKnobMid" data-band="mid">
+            <div class="eq-knob-indicator"></div>
+            <div class="eq-knob-dot"></div>
+          </div>
+          <div class="eq-knob-label">Mid</div>
+          <div class="eq-knob-value" id="eqValMid">0dB</div>
+        </div>
+        <div class="eq-knob-wrap">
+          <div class="eq-knob" id="eqKnobTreble" data-band="treble">
+            <div class="eq-knob-indicator"></div>
+            <div class="eq-knob-dot"></div>
+          </div>
+          <div class="eq-knob-label">Treble</div>
+          <div class="eq-knob-value" id="eqValTreble">0dB</div>
+        </div>
+      </div>
+    </div>
+
     <div class="status-pill" id="status">Ready to play</div>
     <div class="streams-count">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
@@ -742,14 +851,17 @@
     const desktopViewBtn = document.getElementById('desktopViewBtn');
     const streamsCountEl = document.getElementById('streamsCount');
 
-    // ---- Beat-synced RGB lighting engine ----
+    // ---- Beat + bass synced RGB & bubble engine ----
     let beatRAF = null;
     let beatFallbackTimer = null;
+    let bubbleFallbackTimer = null;
     let audioCtx = null;
     let analyser = null;
     let freqData = null;
     let energyHistory = [];
     let lastBeatTime = 0;
+    let bassOn = false;
+    let lastBubbleSpawn = 0;
 
     function setGradientColors(hueBase) {
       const root = document.documentElement.style;
@@ -765,14 +877,13 @@
       document.body.classList.add('beat');
       setTimeout(() => document.body.classList.remove('beat'), 150);
       setGradientColors(Math.floor(Math.random() * 360));
-      spawnBubbles();
     }
 
     const bubblesLayer = document.getElementById('bubblesLayer');
 
-    function spawnBubbles() {
-      const count = 1 + Math.floor(Math.random() * 3);
-      for (let i = 0; i < count; i++) {
+    function spawnBubbles(count) {
+      const n = count || (1 + Math.floor(Math.random() * 2));
+      for (let i = 0; i < n; i++) {
         const bubble = document.createElement('div');
         bubble.className = 'bubble';
         const size = 14 + Math.random() * 46;
@@ -789,6 +900,21 @@
       }
     }
 
+    // Called continuously (every animation frame or fallback tick) while bass is "on"
+    function bassOnTick(now) {
+      // smooth, steady bubble stream rather than one burst per beat
+      if (now - lastBubbleSpawn > 220) {
+        lastBubbleSpawn = now;
+        spawnBubbles(1);
+      }
+    }
+
+    function setBassState(isOn) {
+      if (isOn === bassOn) return;
+      bassOn = isOn;
+      document.body.classList.toggle('bass-on', bassOn);
+    }
+
     function analyseBeatFrame() {
       beatRAF = requestAnimationFrame(analyseBeatFrame);
       analyser.getByteFrequencyData(freqData);
@@ -802,36 +928,81 @@
       const avg = energyHistory.reduce((a, b) => a + b, 0) / energyHistory.length;
 
       const now = performance.now();
+
+      // Continuous bass on/off gate — smooth rising bubbles while bass is present
+      setBassState(energy > Math.max(18, avg * 0.85));
+      if (bassOn) bassOnTick(now);
+
+      // Sharp beat peaks still trigger a color flash
       if (energy > avg * 1.18 && energy > 20 && now - lastBeatTime > 260) {
         lastBeatTime = now;
         triggerBeatFlash();
       }
     }
 
+    let bassFilter = null, midFilter = null, trebleFilter = null;
+    let eqReady = false;
+
+    function buildAudioGraph() {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      const source = audioCtx.createMediaElementSource(audio);
+
+      bassFilter = audioCtx.createBiquadFilter();
+      bassFilter.type = 'lowshelf';
+      bassFilter.frequency.value = 200;
+      bassFilter.gain.value = 0;
+
+      midFilter = audioCtx.createBiquadFilter();
+      midFilter.type = 'peaking';
+      midFilter.frequency.value = 1000;
+      midFilter.Q.value = 0.9;
+      midFilter.gain.value = 0;
+
+      trebleFilter = audioCtx.createBiquadFilter();
+      trebleFilter.type = 'highshelf';
+      trebleFilter.frequency.value = 3200;
+      trebleFilter.gain.value = 0;
+
+      analyser = audioCtx.createAnalyser();
+      analyser.fftSize = 256;
+      freqData = new Uint8Array(analyser.frequencyBinCount);
+
+      source.connect(bassFilter);
+      bassFilter.connect(midFilter);
+      midFilter.connect(trebleFilter);
+      trebleFilter.connect(analyser);
+      analyser.connect(audioCtx.destination);
+      eqReady = true;
+    }
+
+    function setEQ(band, dB) {
+      if (!eqReady) return;
+      const filter = band === 'bass' ? bassFilter : band === 'mid' ? midFilter : trebleFilter;
+      if (filter) filter.gain.value = dB;
+    }
+
     function startBeatSync() {
       if (beatRAF || beatFallbackTimer) return;
       try {
         if (!audioCtx) {
-          audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-          const source = audioCtx.createMediaElementSource(audio);
-          analyser = audioCtx.createAnalyser();
-          analyser.fftSize = 256;
-          freqData = new Uint8Array(analyser.frequencyBinCount);
-          source.connect(analyser);
-          analyser.connect(audioCtx.destination);
+          buildAudioGraph();
         }
         if (audioCtx.state === 'suspended') audioCtx.resume();
         energyHistory = [];
         analyseBeatFrame();
       } catch (err) {
-        // CORS or unsupported: fall back to a simulated ~120 BPM pulse
+        // CORS or unsupported: simulate a smooth bass on/off cycle + ~120 BPM flash
+        setBassState(true);
         beatFallbackTimer = setInterval(triggerBeatFlash, 500);
+        bubbleFallbackTimer = setInterval(() => spawnBubbles(1), 220);
       }
     }
 
     function stopBeatSync() {
       if (beatRAF) { cancelAnimationFrame(beatRAF); beatRAF = null; }
       if (beatFallbackTimer) { clearInterval(beatFallbackTimer); beatFallbackTimer = null; }
+      if (bubbleFallbackTimer) { clearInterval(bubbleFallbackTimer); bubbleFallbackTimer = null; }
+      setBassState(false);
     }
 
     let streamsCount = 48000 + Math.floor(Math.random() * 9000);
@@ -943,6 +1114,63 @@
 
     audio.addEventListener('stalled', () => {
       status.textContent = 'Connection stalled...';
+    });
+
+    // ---- EQ knob drag interaction ----
+    const eqBands = {
+      bass: { knob: document.getElementById('eqKnobBass'), val: document.getElementById('eqValBass'), gain: 0 },
+      mid: { knob: document.getElementById('eqKnobMid'), val: document.getElementById('eqValMid'), gain: 0 },
+      treble: { knob: document.getElementById('eqKnobTreble'), val: document.getElementById('eqValTreble'), gain: 0 }
+    };
+
+    function updateKnobVisual(band) {
+      const b = eqBands[band];
+      const angle = (b.gain / 12) * 135; // -12..+12 dB maps to -135..135 deg
+      const indicator = b.knob.querySelector('.eq-knob-indicator');
+      indicator.style.transform = `translate(-50%, 0) rotate(${angle}deg)`;
+      const rounded = Math.round(b.gain);
+      b.val.textContent = (rounded > 0 ? '+' : '') + rounded + 'dB';
+    }
+
+    function setBandGain(band, gain) {
+      const clamped = Math.max(-12, Math.min(12, gain));
+      eqBands[band].gain = clamped;
+      updateKnobVisual(band);
+      setEQ(band, clamped);
+    }
+
+    Object.keys(eqBands).forEach((band) => {
+      const knob = eqBands[band].knob;
+      let dragging = false;
+      let startY = 0;
+      let startGain = 0;
+
+      function onPointerDown(e) {
+        dragging = true;
+        startY = e.touches ? e.touches[0].clientY : e.clientY;
+        startGain = eqBands[band].gain;
+        e.preventDefault();
+      }
+      function onPointerMove(e) {
+        if (!dragging) return;
+        const y = e.touches ? e.touches[0].clientY : e.clientY;
+        const deltaY = startY - y;
+        const newGain = startGain + (deltaY / 80) * 12;
+        setBandGain(band, newGain);
+      }
+      function onPointerUp() {
+        dragging = false;
+      }
+
+      knob.addEventListener('mousedown', onPointerDown);
+      knob.addEventListener('touchstart', onPointerDown, { passive: false });
+      window.addEventListener('mousemove', onPointerMove);
+      window.addEventListener('touchmove', onPointerMove, { passive: false });
+      window.addEventListener('mouseup', onPointerUp);
+      window.addEventListener('touchend', onPointerUp);
+
+      knob.addEventListener('dblclick', () => setBandGain(band, 0));
+      updateKnobVisual(band);
     });
   </script>
 
